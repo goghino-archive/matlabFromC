@@ -10,7 +10,7 @@ using namespace std;
 int main(int argv, char* argc[])
 {
 
-    MPI_Init(&argv, &argc);
+    MPI_Init(NULL, NULL);
 
     /* workaround to attach GDB */
     char hostname[256];

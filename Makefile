@@ -39,19 +39,14 @@ matlab_eng_lib = -leng -lmx
 libdir      = ${mpi_library} #??? 
 
 CXX         = g++
-CXXFLAGS    = -g -fPIC -fopenmp -m64 -DPERF_METRIC -DMATLAB_MEXFILE # -DMWINDEXISINT
+CXXFLAGS    = -fPIC -fopenmp -m64 -DPERF_METRIC -DMATLAB_MEXFILE # -DMWINDEXISINT
 CXXFLAGS   += -I$(mpi_base)/include
 LDFLAGS     = -L$(mpi_library)
 
 #provide necessary libraries to statically link with MPI (libmpi.a and its helpers)
-LIBS_STATIC        =  $(mpi_library)/libmpi.a
-LIBS_STATIC        += $(mpi_library)/libopen-rte.a #MPI helpers
-LIBS_STATIC        += $(mpi_library)/libopen-pal.a #MPI helpers
-
-LIBS_STATIC        += -lrt #some system utils
-LIBS_STATIC        += -libverbs #allows userspace processes to use InfiniBand/RDMA "verbs" directly
-LIBS_STATIC        += -lnuma #???some Linux libs do not have static versions(e.g., libnuma)
-LIBS_STATIC        += -lutil #some dependency from open-pal
+LIBS_STATIC  =  $(mpi_library)/libmpi.a  \
+		$(mpi_library)/libopen-rte.a \
+		$(mpi_library)/libopen-pal.a -lrt -ldl -libverbs -lnuma -lutil
 
 
 # The following is necessary under cygwin, if native compilers are used
@@ -60,7 +55,7 @@ CYGPATH_W = echo
 MEXFLAGCXX = -cxx
 MEXFLAGS    = -v $(MEXFLAGCXX) -O CC="$(CXX)" CXX="$(CXX)" LD="$(CXX)"       \
               COPTIMFLAGS="$(CXXFLAGS)" CXXOPTIMFLAGS="$(CXXFLAGS)" \
-              LDOPTIMFLAGS="-static $(LDFLAGS)" 
+              LDOPTIMFLAGS="$(LDFLAGS)" 
 
 TARGET = mexsolve.$(MEXSUFFIX)
 OBJS   = mexsolve.o
@@ -72,14 +67,14 @@ all: $(TARGET) main
 
 $(TARGET): $(OBJS)
 	make mexopts
-	$(MEX) $(LDFLAGS) -g $(MEXFLAGS) -output $@ $^ \
-	-lmpi
+	$(MEX) $(LDFLAGS) -g $(MEXFLAGS) -output $@ $^ $(LIBS_STATIC)
 
+#export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/MATLAB/R2014b/bin/glnxa64
 main: main.cpp
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) -std=c++11 -O3 -Wall -W \
 	-I$(matlab_eng_inc)  -L$(matlab_eng_path) \
 	-o $@ $< \
-	-lmpi $(matlab_eng_lib)
+	$(matlab_eng_lib) $(LIBS_STATIC) 
 
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) -I$(matlab_eng_inc) \
