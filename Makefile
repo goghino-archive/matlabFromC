@@ -77,7 +77,7 @@ $(TARGET): $(OBJS)
 
 #export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/MATLAB/R2014b/bin/glnxa64
 main: main.cpp
-	LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/MATLAB/R2014b/bin/glnxa64 \
+	LD_LIBRARY_PATH=$$LD_LIBRARY_PATH:/opt/MATLAB/R2014b/bin/glnxa64 \
 	$(CXX) $(CXXFLAGS) $(LFLAGS) -std=c++11 -O3 -Wall -W \
 	-I$(matlab_eng_inc)  -L$(matlab_eng_path) \
 	-o $@ $< \
@@ -89,6 +89,10 @@ main: main.cpp
 
 clean:
 	rm -f $(OBJS) *.lo $(TARGET) main
+
+run:
+	#LD_LIBRARY_PATH=$$LD_LIBRARY_PATH:/opt/MATLAB/R2014b/bin/glnxa64 \
+	$(mpi_base)/bin/mpirun  --mca btl self,openib -np 2 ./main
 
 distclean: clean
 
