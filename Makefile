@@ -45,24 +45,23 @@ matlab_eng_lib = -leng -lmx
 
 libdir      = /home/kardos/misc/matlabMpiC 
 
+SANITIZE    = #-fsanitize=address
 CXX         = g++
-CXXFLAGS    = -fPIC -fopenmp -m64 -DPERF_METRIC -DMATLAB_MEXFILE # -DMWINDEXISINT
+CXXFLAGS    = -g -fPIC -fopenmp -m64 ${SANITIZE} -DPERF_METRIC -DMATLAB_MEXFILE # -DMWINDEXISINT
 CXXFLAGS   += -I$(mpi_base)/include -pthread
-LDFLAGS     = -L$(mpi_library)
+LFLAGS     = -L$(mpi_library) ${SANITIZE}
 
 #provide necessary libraries to statically link with MPI (libmpi.a and its helpers)
 LIBS_STATIC  =  $(mpi_library)/libmpi.a  \
 		$(mpi_library)/libopen-rte.a \
 		$(mpi_library)/libopen-pal.a -lrt -ldl -libverbs -lnuma -lutil
-
-
 # The following is necessary under cygwin, if native compilers are used
 CYGPATH_W = echo
 
 MEXFLAGCXX = -cxx
 MEXFLAGS    = -v $(MEXFLAGCXX) -O CC="$(CXX)" CXX="$(CXX)" LD="$(CXX)"       \
               COPTIMFLAGS="$(CXXFLAGS)" CXXOPTIMFLAGS="$(CXXFLAGS)" \
-              LDOPTIMFLAGS="$(LDFLAGS)" 
+              LDOPTIMFLAGS="$(LFLAGS)" -largeArrayDims
 
 TARGET = mexsolve.$(MEXSUFFIX)
 OBJS   = mexsolve.o
@@ -74,12 +73,12 @@ all: $(TARGET) main
 
 $(TARGET): $(OBJS)
 	make mexopts
-	$(MEX) -L${mpi_library} -g $(MEXFLAGS) -output $@ $^ -lmpi
+	$(MEX) -L${mpi_library} $(MEXFLAGS) -output $@ $^ -lmpi
 
 #export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/MATLAB/R2014b/bin/glnxa64
 main: main.cpp
 	LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/MATLAB/R2014b/bin/glnxa64 \
-	$(CXX) $(CXXFLAGS) $(LDFLAGS) -std=c++11 -O3 -Wall -W \
+	$(CXX) $(CXXFLAGS) $(LFLAGS) -std=c++11 -O3 -Wall -W \
 	-I$(matlab_eng_inc)  -L$(matlab_eng_path) \
 	-o $@ $< \
 	$(matlab_eng_lib) -lmpi 
