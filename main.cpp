@@ -36,19 +36,24 @@ int main(int argv, char* argc[])
         cout << "========================" << endl;
         cout << "I am about to call MATLAB" << endl;
         cout << "========================" << endl;
-         //call matlab
-        char comm[500] = "matlab -nosplash -nodisplay -nojvm -nodesktop -r \"interface\"";
-        cout << "Calling the command: " << comm  << " at the MASTER node"<< endl;
-        system(comm);
+       
+        //  //call matlab
+        //  char comm[500] = "matlab -nosplash -nodisplay -nojvm -nodesktop -r \"interface\"";
+        //  cout << "Calling the command: " << comm  << " at the MASTER node"<< endl;
+        //  system(comm);
 
-        //Engine* ep;
-        //if (!(ep = engOpen("")))
-        //{
-        //    fprintf(stderr, "\n *** Can't start MATLAB engine! *** \n");
-        //    return EXIT_FAILURE;
-        //}
+        Engine* ep;
+        if (!(ep = engOpen("")))
+        {
+            fprintf(stderr, "\n *** Can't start MATLAB engine! *** \n");
+            return EXIT_FAILURE;
+        }
 
-        //engEvalString(ep, "interface");
+        engEvalString(ep, "interface");
+        
+        cout << "========================" << endl;
+        cout << "MATLAB call returned" << endl;
+        cout << "========================" << endl;
     }
     else
     {
