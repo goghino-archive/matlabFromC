@@ -13,8 +13,17 @@
 # installation. This is the directory so that in its 'bin/'
 # subdirectory you see all the matlab executables (such as 'matlab',
 # 'mex', etc.)
-#MATLAB_HOME = /Applications/MATLAB_R2014b.app
+
+HOST=$(shell hostname)
+ifeq ($(HOST),archimedes)
+mpi_base = /home/kardos/openmpi
 MATLAB_HOME = /opt/MATLAB/R2014b
+else
+mpi_base = ~/privateapps/openmpi/2.0.1
+MATLAB_HOME = /apps/matlab/R2016a
+LIB_SLURM = -lslurm
+PRELOAD = LD_PRELOAD=/usr/lib64/libslurm.so
+endif
 
 # Set the suffix for matlab mex files. The contents of the
 # $(MATLAB_HOME)/extern/examples/mex directory might be able to help
@@ -25,22 +34,20 @@ MEXSUFFIX   = mexmaci64
 # just "mex". But it also may be something like
 # /user/local/R2006b/bin/mex if "mex" doesn't work.
 MEX = $(MATLAB_HOME)/bin/mex
-#MEX = "$(MATLAB_HOME)/sys/perl/win32/bin/perl" "`$(CYGPATH_W) "$(MATLAB_HOME)/bin/mex.pl"`"
 
 #############################################################################
 # Do not modify anything below unless you know what you're doing.
-mpi_base =  /home/kardos/openmpi-2.0.0
 mpi_library = $(mpi_base)/lib
 
 matlab_eng_inc = ${MATLAB_HOME}/extern/include
 matlab_eng_path = ${MATLAB_HOME}/bin/glnxa64
 matlab_eng_lib = -leng -lmx
 
-libdir      = ${mpi_library} #??? 
+libdir      = /home/kardos/misc/matlabMpiC 
 
 CXX         = g++
 CXXFLAGS    = -fPIC -fopenmp -m64 -DPERF_METRIC -DMATLAB_MEXFILE # -DMWINDEXISINT
-CXXFLAGS   += -I$(mpi_base)/include
+CXXFLAGS   += -I$(mpi_base)/include -pthread
 LDFLAGS     = -L$(mpi_library)
 
 #provide necessary libraries to statically link with MPI (libmpi.a and its helpers)
@@ -67,14 +74,15 @@ all: $(TARGET) main
 
 $(TARGET): $(OBJS)
 	make mexopts
-	$(MEX) $(LDFLAGS) -g $(MEXFLAGS) -output $@ $^ $(LIBS_STATIC)
+	$(MEX) -L${mpi_library} -g $(MEXFLAGS) -output $@ $^ -lmpi
 
 #export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/MATLAB/R2014b/bin/glnxa64
 main: main.cpp
+	LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/MATLAB/R2014b/bin/glnxa64 \
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) -std=c++11 -O3 -Wall -W \
 	-I$(matlab_eng_inc)  -L$(matlab_eng_path) \
 	-o $@ $< \
-	$(matlab_eng_lib) $(LIBS_STATIC) 
+	$(matlab_eng_lib) -lmpi 
 
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) -I$(matlab_eng_inc) \
