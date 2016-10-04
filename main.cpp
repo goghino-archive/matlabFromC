@@ -9,9 +9,9 @@ using namespace std;
 
 int main(int argv, char* argc[])
 {
-        cout << "========================" << endl;
-        cout << "I am about to call MPI-INIT" << endl;
-        cout << "========================" << endl;
+    cout << "========================" << endl;
+    cout << "I am about to call MPI-INIT" << endl;
+    cout << "========================" << endl;
     MPI_Init(NULL, NULL);
 
     /* workaround to attach GDB */
@@ -36,21 +36,28 @@ int main(int argv, char* argc[])
         cout << "========================" << endl;
         cout << "I am about to call MATLAB" << endl;
         cout << "========================" << endl;
-       
-        //  //call matlab
-        //  char comm[500] = "matlab -nosplash -nodisplay -nojvm -nodesktop -r \"interface\"";
-        //  cout << "Calling the command: " << comm  << " at the MASTER node"<< endl;
-        //  system(comm);
 
-        Engine* ep;
-        if (!(ep = engOpen("")))
+        //call matlab
+        if(0)
         {
-            fprintf(stderr, "\n *** Can't start MATLAB engine! *** \n");
-            return EXIT_FAILURE;
+            // use system call
+            char comm[500] = "matlab -nosplash -nodisplay -nojvm -nodesktop -r \"interface\"";
+            cout << "Calling the command: " << comm  << " at the MASTER node"<< endl;
+            system(comm);
+        }
+        else
+        {
+            // use Matlab engine
+            Engine* ep;
+            if (!(ep = engOpen("")))
+            {
+                fprintf(stderr, "\n *** Can't start MATLAB engine! *** \n");
+                return EXIT_FAILURE;
+            }
+
+            engEvalString(ep, "interface");
         }
 
-        engEvalString(ep, "interface");
-        
         cout << "========================" << endl;
         cout << "MATLAB call returned" << endl;
         cout << "========================" << endl;

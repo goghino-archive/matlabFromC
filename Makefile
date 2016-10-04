@@ -19,7 +19,7 @@ ifeq ($(HOST),archimedes)
 mpi_base = /home/kardos/openmpi
 MATLAB_HOME = /opt/MATLAB/R2014b
 else
-mpi_base = ~/privateapps/openmpi/2.0.1
+mpi_base = /home/kardos/privateapps/openmpi/2.0.1
 MATLAB_HOME = /apps/matlab/R2016a
 LIB_SLURM = -lslurm
 PRELOAD = LD_PRELOAD=/usr/lib64/libslurm.so
@@ -93,7 +93,7 @@ clean:
 
 run:
 	LD_LIBRARY_PATH=$$LD_LIBRARY_PATH:$(MATLAB_HOME)/bin/glnxa64 \
-	$(mpi_base)/bin/mpirun  --mca btl self,openib -np 2 ./main
+	$(mpi_base)/bin/mpirun -np 2 ./main
 
 distclean: clean
 
