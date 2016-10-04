@@ -40,7 +40,15 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     // send something to childs
     for (int i=1; i<mpi_size; i++)
     {
+        mexPrintf("========================\n");
+        mexPrintf("Before calling send() in MEX\n");
+        mexPrintf("========================\n");
+
         MPI_Send(&something, 1, MPI_INT, i, 0, MPI_COMM_WORLD);
+
+        mexPrintf("========================\n");
+        mexPrintf("After calling send() in MEX\n");
+        mexPrintf("========================\n");
     }
     
     //associate outputs
