@@ -38,7 +38,8 @@ int main(int argv, char* argc[])
         cout << "========================" << endl;
 
         //call matlab
-        if(0)
+        const int SYSTEM = 1;
+        if(SYSTEM)
         {
             // use system call
             char comm[500] = "matlab -nosplash -nodisplay -nojvm -nodesktop -r \"interface\"";
@@ -55,6 +56,7 @@ int main(int argv, char* argc[])
                 return EXIT_FAILURE;
             }
 
+            cout << "Calling the Matlab Engine with command 'interface' at the MASTER node"<< endl;
             engEvalString(ep, "interface");
         }
 

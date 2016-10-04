@@ -1,1 +1,1 @@
-X = mexsolve()
+mexsolve()
