@@ -89,11 +89,14 @@ main: main.cpp
         -o $@ -c $^
 
 clean:
-	rm -f $(OBJS) *.lo $(TARGET) main
+	rm -f $(OBJS) *.lo *.mexa64 $(TARGET) main
 
 run:
 	LD_LIBRARY_PATH=$$LD_LIBRARY_PATH:$(MATLAB_HOME)/bin/glnxa64 \
-	$(mpi_base)/bin/mpirun -np 2 ./main
+	$(mpi_base)/bin/mpirun --mca mpi_warn_on_fork 0 --mca btl_openib_want_fork_support 1 \
+	 --mca btl openib,tcp,sm,self \
+	 --mca btl_base_verbose 100 --mca btl_openib_verbose 100 \
+	 -np 2 -npernode 1 ./main
 
 distclean: clean
 
