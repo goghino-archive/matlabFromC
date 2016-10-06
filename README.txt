@@ -24,3 +24,17 @@
 3. $ make
 
 4. $ make run
+
+
+TODO
+    THIS APPROACH DOES NOT WORK!!!!!
+    https://www.mail-archive.com/users@lists.open-mpi.org//msg30088.html
+
+    The blocker is that a child cannot call MPI_Init() if its parent already called MPI_Init()
+    
+    Fortunatly, there are some options (which I have not tried):-)
+    
+    1) MPI_Comm_spawn matlab
+    master can MPI_Comm_spawn() matlab, and then matlab can merge the parent communicator,
+    and communicate to master and slaves
+    (Merging communicators: https://stackoverflow.com/questions/24806782/mpi-merge-multiple-intercoms-into-a-single-intracomm)
