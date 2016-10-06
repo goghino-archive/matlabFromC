@@ -19,7 +19,7 @@ ifeq ($(HOST),archimedes)
 mpi_base = /home/kardos/openmpi
 MATLAB_HOME = /opt/MATLAB/R2014b
 else
-mpi_base = /home/kardos/privateapps/openmpi/2.0.1
+mpi_base = $(OPENMPI_DIR)
 MATLAB_HOME = /apps/matlab/R2016a
 LIB_SLURM = -lslurm
 PRELOAD = LD_PRELOAD=/usr/lib64/libslurm.so
@@ -38,6 +38,7 @@ MEX = $(MATLAB_HOME)/bin/mex
 #############################################################################
 # Do not modify anything below unless you know what you're doing.
 mpi_library = $(mpi_base)/lib
+mpi_libs   = -lmpi #-lmpi_cxx
 
 matlab_eng_inc = ${MATLAB_HOME}/extern/include
 matlab_eng_path = ${MATLAB_HOME}/bin/glnxa64
@@ -74,15 +75,14 @@ all: $(TARGET) main
 $(TARGET): $(OBJS)
 	make mexopts
 	LD_LIBRARY_PATH=$$LD_LIBRARY_PATH:$(MATLAB_HOME)/bin/glnxa64 \
-	$(MEX) -L${mpi_library} $(MEXFLAGS) -output $@ $^ -lmpi
+	$(MEX) -L${mpi_library} $(MEXFLAGS) -output $@ $^ $(mpi_libs)
 
-#export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/MATLAB/R2014b/bin/glnxa64
 main: main.cpp
 	LD_LIBRARY_PATH=$$LD_LIBRARY_PATH:$(MATLAB_HOME)/bin/glnxa64 \
 	$(CXX) $(CXXFLAGS) $(LFLAGS) -std=c++11 -O3 -Wall -W \
 	-I$(matlab_eng_inc)  -L$(matlab_eng_path) \
 	-o $@ $< \
-	$(matlab_eng_lib) -lmpi 
+	$(matlab_eng_lib) $(mpi_libs)
 
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) -I$(matlab_eng_inc) \
@@ -97,7 +97,8 @@ run:
 	 -np 2 -npernode 1 ./main
 	#--mca btl_base_verbose 100 --mca btl_openib_verbose 100 \
 
-distclean: clean
+#with older openmpi version, it is required to preoload libstdc++ and -lmpi_cxx	
+#LD_PRELOAD=/apps/gcc/gcc-6.1.0/lib64/libstdc++.so.6
 
 # make mexopts applies a set of fixes to mexopts.sh on Mac,
 # or mexopts.bat on Windows (if that file was generated
